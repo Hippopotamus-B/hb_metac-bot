@@ -22,6 +22,7 @@ from forecasting_tools import (
     clean_indents,
     structure_output,
 )
+from forecasting_tools import Notepad
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,16 @@ class FallTemplateBot2025(ForecastBot):
     _concurrency_limiter = asyncio.Semaphore(_max_concurrent_questions)
 
     async def run_research(self, question: MetaculusQuestion) -> str:
+        notepad = await self._get_notepad(question)
+        category_prompt = clean_indents(
+            f"""
+                    You are an assistant to a superforecaster. Please categorize this question {question.question_text} into one of the following categories:
+                    political-usa, political-international, financial-usa, financial-international, culture-media, sport, miscellaneous. 
+                    Your response should be a one word answer, consisting only of one of the above tags.
+                    """
+        )
+        notepad.question_category = await self.get_llm("default", "llm").invoke(category_prompt)
+
         async with self._concurrency_limiter:
             research = ""
             researcher = self.get_llm("researcher")
@@ -120,7 +131,9 @@ class FallTemplateBot2025(ForecastBot):
 
                 Question:
                 {question.question_text}
-
+                
+                Question background:
+                {question.background_info}
                 This question's outcome will be determined by the specific criteria below:
                 {question.resolution_criteria}
 
@@ -165,43 +178,127 @@ class FallTemplateBot2025(ForecastBot):
             logger.info(f"Found Research for URL {question.page_url}:\n{research}")
             return research
 
+    async def _initialize_notepad(
+            self, question: MetaculusQuestion
+    ) -> Notepad:
+        new_notepad = Notepad(question=question)
+        new_notepad.question_category = "political-usa"
+        return new_notepad
+
+#political-usa, political-international, financial-usa, financial-international, culture-media, sport, miscellaneous
     async def _run_forecast_on_binary(
         self, question: BinaryQuestion, research: str
     ) -> ReasonedPrediction[float]:
-        prompt = clean_indents(
-            f"""
-            You are a professional forecaster interviewing for a job.
+        notepad = await self._get_notepad(question)
+        if notepad.question_category == "political-international":
+            model_name = "o3"
+            prompt = clean_indents(
+                f"""
+                You are a professional forecaster interviewing for a job.
 
-            Your interview question is:
-            {question.question_text}
+                Your interview question is:
+                {question.question_text}
 
-            Question background:
-            {question.background_info}
-
-
-            This question's outcome will be determined by the specific criteria below. These criteria have not yet been satisfied:
-            {question.resolution_criteria}
-
-            {question.fine_print}
+                Question background:
+                {question.background_info}
 
 
-            Your research assistant says:
-            {research}
+                This question's outcome will be determined by the specific criteria below. These criteria have not yet been satisfied:
+                {question.resolution_criteria}
 
-            Today is {datetime.now().strftime("%Y-%m-%d")}.
+                {question.fine_print}
 
-            Before answering you write:
-            (a) The time left until the outcome to the question is known.
-            (b) The status quo outcome if nothing changed.
-            (c) A brief description of a scenario that results in a No outcome.
-            (d) A brief description of a scenario that results in a Yes outcome.
 
-            You write your rationale remembering that good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time.
+                Your research assistant says:
+                {research}
 
-            The last thing you write is your final answer as: "Probability: ZZ%", 0-100
-            """
-        )
-        reasoning = await self.get_llm("default", "llm").invoke(prompt)
+                Today is {datetime.now().strftime("%Y-%m-%d")}.
+
+                Before answering you write:
+                (a) The time left until the outcome to the question is known.
+                (b) The status quo outcome if nothing changed.
+                (c) A brief description of a scenario that results in a No outcome.
+                (d) A brief description of a scenario that results in a Yes outcome.
+
+                Forecasts at the extreme ends provide marginal benefits, while leading to a massive point loss if predicted incorrectly. As such, keep forecasts between 2% and 98%. Remember to not be overconfident.
+                You write your rationale remembering that good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time.
+
+                The last thing you write is your final answer as: "Probability: ZZ%", 0-100
+                """
+            )
+        elif notepad.question_category == "financial-usa":
+            model_name = "o1-high"
+            prompt = clean_indents(
+                f"""
+                You are a professional forecaster interviewing for a job.
+
+                Your interview question is:
+                {question.question_text}
+
+                Question background:
+                {question.background_info}
+
+
+                This question's outcome will be determined by the specific criteria below. These criteria have not yet been satisfied:
+                {question.resolution_criteria}
+
+                {question.fine_print}
+
+
+                Your research assistant says:
+                {research}
+
+                Today is {datetime.now().strftime("%Y-%m-%d")}.
+
+                Before answering you write:
+                (a) The time left until the outcome to the question is known.
+                (b) The status quo outcome if nothing changed.
+                (c) A brief description of a scenario that results in a No outcome.
+                (d) A brief description of a scenario that results in a Yes outcome.
+
+                Forecasts at the extreme ends provide marginal benefits, while leading to a massive point loss if predicted incorrectly. As such, keep forecasts between 5% and 95%. Remember to not be overconfident.
+                You write your rationale remembering that good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time.
+
+                The last thing you write is your final answer as: "Probability: ZZ%", 0-100
+                """
+            )
+        else:
+            model_name = "o4-mini-high"
+            prompt = clean_indents(
+                f"""
+                You are a professional forecaster interviewing for a job.
+    
+                Your interview question is:
+                {question.question_text}
+    
+                Question background:
+                {question.background_info}
+    
+    
+                This question's outcome will be determined by the specific criteria below. These criteria have not yet been satisfied:
+                {question.resolution_criteria}
+    
+                {question.fine_print}
+    
+    
+                Your research assistant says:
+                {research}
+    
+                Today is {datetime.now().strftime("%Y-%m-%d")}.
+    
+                Before answering you write:
+                (a) The time left until the outcome to the question is known.
+                (b) The status quo outcome if nothing changed.
+                (c) A brief description of a scenario that results in a No outcome.
+                (d) A brief description of a scenario that results in a Yes outcome.
+    
+                Forecasts at the extreme ends provide marginal benefits, while leading to a massive point loss if predicted incorrectly. As such, keep forecasts between 3% and 97%. Remember to not be overconfident.
+                You write your rationale remembering that good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time.
+    
+                The last thing you write is your final answer as: "Probability: ZZ%", 0-100
+                """
+            )
+        reasoning = await self.get_llm(model_name, "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         binary_prediction: BinaryPrediction = await structure_output(
             reasoning, BinaryPrediction, model=self.get_llm("parser", "llm")
@@ -216,43 +313,85 @@ class FallTemplateBot2025(ForecastBot):
     async def _run_forecast_on_multiple_choice(
         self, question: MultipleChoiceQuestion, research: str
     ) -> ReasonedPrediction[PredictedOptionList]:
-        prompt = clean_indents(
-            f"""
-            You are a professional forecaster interviewing for a job.
+        notepad = await self._get_notepad(question)
+        if notepad.question_category == "culture-media":
+            model_name = "o4-mini"
+            prompt = clean_indents(
+                f"""
+                You are a professional forecaster interviewing for a job.
+    
+                Your interview question is:
+                {question.question_text}
+    
+                The options are: {question.options}
+    
+    
+                Background:
+                {question.background_info}
+    
+                {question.resolution_criteria}
+    
+                {question.fine_print}
+    
+    
+                Your research assistant says:
+                {research}
+    
+                Today is {datetime.now().strftime("%Y-%m-%d")}.
+    
+                Before answering you write:
+                (a) The time left until the outcome to the question is known.
+                (b) The status quo outcome if nothing changed.
+                (c) A description of an scenario that results in an unexpected outcome.
+    
+                You write your rationale remembering that (1) good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time, and (2) good forecasters leave some moderate probability on most options to account for unexpected outcomes.
+    
+                The last thing you write is your final probabilities for the N options in this order {question.options} as:
+                Option_A: Probability_A
+                Option_B: Probability_B
+                ...
+                Option_N: Probability_N
+                """
+            )
+        else:
+            model_name= "o3"
+            prompt = clean_indents(
+                f"""
+                You are a professional forecaster interviewing for a job.
 
-            Your interview question is:
-            {question.question_text}
+                Your interview question is:
+                {question.question_text}
 
-            The options are: {question.options}
-
-
-            Background:
-            {question.background_info}
-
-            {question.resolution_criteria}
-
-            {question.fine_print}
+                The options are: {question.options}
 
 
-            Your research assistant says:
-            {research}
+                Background:
+                {question.background_info}
 
-            Today is {datetime.now().strftime("%Y-%m-%d")}.
+                {question.resolution_criteria}
 
-            Before answering you write:
-            (a) The time left until the outcome to the question is known.
-            (b) The status quo outcome if nothing changed.
-            (c) A description of an scenario that results in an unexpected outcome.
+                {question.fine_print}
 
-            You write your rationale remembering that (1) good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time, and (2) good forecasters leave some moderate probability on most options to account for unexpected outcomes.
 
-            The last thing you write is your final probabilities for the N options in this order {question.options} as:
-            Option_A: Probability_A
-            Option_B: Probability_B
-            ...
-            Option_N: Probability_N
-            """
-        )
+                Your research assistant says:
+                {research}
+
+                Today is {datetime.now().strftime("%Y-%m-%d")}.
+
+                Before answering you write:
+                (a) The time left until the outcome to the question is known.
+                (b) The status quo outcome if nothing changed.
+                (c) A description of an scenario that results in an unexpected outcome.
+
+                You write your rationale remembering that (1) good forecasters put extra weight on the status quo outcome since the world changes slowly most of the time, and (2) good forecasters leave some moderate probability on most options to account for unexpected outcomes.
+
+                The last thing you write is your final probabilities for the N options in this order {question.options} as:
+                Option_A: Probability_A
+                Option_B: Probability_B
+                ...
+                Option_N: Probability_N
+                """
+            )
         parsing_instructions = clean_indents(
             f"""
             Make sure that all option names are one of the following:
@@ -260,7 +399,7 @@ class FallTemplateBot2025(ForecastBot):
             The text you are parsing may prepend these options with some variation of "Option" which you should remove if not part of the option names I just gave you.
             """
         )
-        reasoning = await self.get_llm("default", "llm").invoke(prompt)
+        reasoning = await self.get_llm(model_name, "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         predicted_option_list: PredictedOptionList = await structure_output(
             text_to_structure=reasoning,
@@ -281,57 +420,112 @@ class FallTemplateBot2025(ForecastBot):
         upper_bound_message, lower_bound_message = (
             self._create_upper_and_lower_bound_messages(question)
         )
-        prompt = clean_indents(
-            f"""
-            You are a professional forecaster interviewing for a job.
+        notepad = await self._get_notepad(question)
+        if notepad.question_category == "financial-usa" or notepad.question_category == "financial-international":
+            model_name = "o3"
+            prompt = clean_indents(
+                f"""
+                You are a professional forecaster interviewing for a job.
+    
+                Your interview question is:
+                {question.question_text}
+    
+                Background:
+                {question.background_info}
+    
+                {question.resolution_criteria}
+    
+                {question.fine_print}
+    
+                Units for answer: {question.unit_of_measure if question.unit_of_measure else "Not stated (please infer this)"}
+    
+                Your research assistant says:
+                {research}
+    
+                Today is {datetime.now().strftime("%Y-%m-%d")}.
+    
+                {lower_bound_message}
+                {upper_bound_message}
+    
+                Formatting Instructions:
+                - Please notice the units requested (e.g. whether you represent a number as 1,000,000 or 1 million).
+                - Never use scientific notation.
+                - Always start with a smaller number (more negative if negative) and then increase from there
+    
+                Before answering you write:
+                (a) The time left until the outcome to the question is known.
+                (b) The outcome if nothing changed.
+                (c) The outcome if the current trend continued.
+                (d) The expectations of experts and markets.
+                (e) A brief description of an unexpected scenario that results in a low outcome.
+                (f) A brief description of an unexpected scenario that results in a high outcome.
+    
+                You remind yourself that good forecasters are humble and set wide 90/10 confidence intervals to account for unknown unknowns.
+    
+                The last thing you write is your final answer as:
+                "
+                Percentile 10: XX
+                Percentile 20: XX
+                Percentile 40: XX
+                Percentile 60: XX
+                Percentile 80: XX
+                Percentile 90: XX
+                "
+                """
+            )
+        else:
+            model_name = "o3"
+            prompt = clean_indents(
+                f"""
+                You are a professional forecaster interviewing for a job.
 
-            Your interview question is:
-            {question.question_text}
+                Your interview question is:
+                {question.question_text}
 
-            Background:
-            {question.background_info}
+                Background:
+                {question.background_info}
 
-            {question.resolution_criteria}
+                {question.resolution_criteria}
 
-            {question.fine_print}
+                {question.fine_print}
 
-            Units for answer: {question.unit_of_measure if question.unit_of_measure else "Not stated (please infer this)"}
+                Units for answer: {question.unit_of_measure if question.unit_of_measure else "Not stated (please infer this)"}
 
-            Your research assistant says:
-            {research}
+                Your research assistant says:
+                {research}
 
-            Today is {datetime.now().strftime("%Y-%m-%d")}.
+                Today is {datetime.now().strftime("%Y-%m-%d")}.
 
-            {lower_bound_message}
-            {upper_bound_message}
+                {lower_bound_message}
+                {upper_bound_message}
 
-            Formatting Instructions:
-            - Please notice the units requested (e.g. whether you represent a number as 1,000,000 or 1 million).
-            - Never use scientific notation.
-            - Always start with a smaller number (more negative if negative) and then increase from there
+                Formatting Instructions:
+                - Please notice the units requested (e.g. whether you represent a number as 1,000,000 or 1 million).
+                - Never use scientific notation.
+                - Always start with a smaller number (more negative if negative) and then increase from there
 
-            Before answering you write:
-            (a) The time left until the outcome to the question is known.
-            (b) The outcome if nothing changed.
-            (c) The outcome if the current trend continued.
-            (d) The expectations of experts and markets.
-            (e) A brief description of an unexpected scenario that results in a low outcome.
-            (f) A brief description of an unexpected scenario that results in a high outcome.
+                Before answering you write:
+                (a) The time left until the outcome to the question is known.
+                (b) The outcome if nothing changed.
+                (c) The outcome if the current trend continued.
+                (d) The expectations of experts and markets.
+                (e) A brief description of an unexpected scenario that results in a low outcome.
+                (f) A brief description of an unexpected scenario that results in a high outcome.
 
-            You remind yourself that good forecasters are humble and set wide 90/10 confidence intervals to account for unknown unknowns.
+                You remind yourself that good forecasters are humble and set wide 90/10 confidence intervals to account for unknown unknowns.
 
-            The last thing you write is your final answer as:
-            "
-            Percentile 10: XX
-            Percentile 20: XX
-            Percentile 40: XX
-            Percentile 60: XX
-            Percentile 80: XX
-            Percentile 90: XX
-            "
-            """
-        )
-        reasoning = await self.get_llm("default", "llm").invoke(prompt)
+                The last thing you write is your final answer as:
+                "
+                Percentile 10: XX
+                Percentile 20: XX
+                Percentile 40: XX
+                Percentile 60: XX
+                Percentile 80: XX
+                Percentile 90: XX
+                "
+                """
+            )
+        reasoning = await self.get_llm(model_name, "llm").invoke(prompt)
         logger.info(f"Reasoning for URL {question.page_url}: {reasoning}")
         percentile_list: list[Percentile] = await structure_output(
             reasoning, list[Percentile], model=self.get_llm("parser", "llm")
@@ -382,13 +576,13 @@ if __name__ == "__main__":
     litellm_logger.propagate = False
 
     parser = argparse.ArgumentParser(
-        description="Run the Q1TemplateBot forecasting system"
+        description="Run the forecasting system based on the FallTemplateBot."
     )
     parser.add_argument(
         "--mode",
         type=str,
         choices=["tournament", "metaculus_cup", "test_questions"],
-        default="tournament",
+        default="test_questions",
         help="Specify the run mode (default: tournament)",
     )
     args = parser.parse_args()
