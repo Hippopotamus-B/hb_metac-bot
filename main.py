@@ -107,6 +107,13 @@ class FallTemplateBot2025(ForecastBot):
     )
     _concurrency_limiter = asyncio.Semaphore(_max_concurrent_questions)
 
+    async def _initialize_notepad(
+            self, question: MetaculusQuestion
+    ) -> Notepad:
+        new_notepad = Notepad(question=question)
+        new_notepad.note_entries["question_category"] = "political-usa"
+        return new_notepad
+
     async def run_research(self, question: MetaculusQuestion) -> str:
         notepad = await self._get_notepad(question)
         category_prompt = clean_indents(
@@ -116,7 +123,7 @@ class FallTemplateBot2025(ForecastBot):
                     Your response should be a one word answer, consisting only of one of the above tags.
                     """
         )
-        notepad.question_category = await self.get_llm("default", "llm").invoke(category_prompt)
+        notepad.note_entries["question_category"] = await self.get_llm("default", "llm").invoke(category_prompt)
 
         async with self._concurrency_limiter:
             research = ""
@@ -178,19 +185,12 @@ class FallTemplateBot2025(ForecastBot):
             logger.info(f"Found Research for URL {question.page_url}:\n{research}")
             return research
 
-    async def _initialize_notepad(
-            self, question: MetaculusQuestion
-    ) -> Notepad:
-        new_notepad = Notepad(question=question)
-        new_notepad.question_category = "political-usa"
-        return new_notepad
-
 #political-usa, political-international, financial-usa, financial-international, culture-media, sport, miscellaneous
     async def _run_forecast_on_binary(
         self, question: BinaryQuestion, research: str
     ) -> ReasonedPrediction[float]:
         notepad = await self._get_notepad(question)
-        if notepad.question_category == "political-international":
+        if notepad.note_entries["question_category"] == "political-international":
             model_name = "o3"
             prompt = clean_indents(
                 f"""
@@ -226,7 +226,7 @@ class FallTemplateBot2025(ForecastBot):
                 The last thing you write is your final answer as: "Probability: ZZ%", 0-100
                 """
             )
-        elif notepad.question_category == "financial-usa":
+        elif notepad.note_entries["question_category"] == "financial-usa":
             model_name = "o1-high"
             prompt = clean_indents(
                 f"""
@@ -314,7 +314,7 @@ class FallTemplateBot2025(ForecastBot):
         self, question: MultipleChoiceQuestion, research: str
     ) -> ReasonedPrediction[PredictedOptionList]:
         notepad = await self._get_notepad(question)
-        if notepad.question_category == "culture-media":
+        if notepad.note_entries["question_category"] == "culture-media":
             model_name = "o4-mini"
             prompt = clean_indents(
                 f"""
@@ -421,7 +421,7 @@ class FallTemplateBot2025(ForecastBot):
             self._create_upper_and_lower_bound_messages(question)
         )
         notepad = await self._get_notepad(question)
-        if notepad.question_category == "financial-usa" or notepad.question_category == "financial-international":
+        if notepad.note_entries["question_category"] == "financial-usa" or notepad.question_category == "financial-international":
             model_name = "o3"
             prompt = clean_indents(
                 f"""
