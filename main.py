@@ -68,7 +68,7 @@ class FallTemplateBot2025(ForecastBot):
         ...
         llms={  # choose your model names or GeneralLlm llms here, otherwise defaults will be chosen for you
             "default": GeneralLlm(
-                model="openrouter/openai/gpt-4o", # "anthropic/claude-3-5-sonnet-20241022", etc (see docs for litellm)
+                model="gpt-4o", # "anthropic/claude-3-5-sonnet-20241022", etc (see docs for litellm)
                 temperature=0.3,
                 timeout=40,
                 allowed_tries=2,
@@ -195,7 +195,6 @@ class FallTemplateBot2025(ForecastBot):
             else:
 
                 research = await self.get_llm("researcher", "llm").invoke(prompt)
-
             logger.info(f"Found Research for URL {question.page_url}:\n{research}")
             return research
 
@@ -615,15 +614,43 @@ if __name__ == "__main__":
         folder_to_save_reports_to=None,
         skip_previously_forecasted_questions=True,
         llms={  # choose your model names or GeneralLlm llms here, otherwise defaults will be chosen for you
-             "default": GeneralLlm(
-                 model="openrouter/openai/gpt-4o", # "anthropic/claude-3-5-sonnet-20241022", etc (see docs for litellm)
+         "default": GeneralLlm(
+               model="openrouter/openai/gpt-4o", # "anthropic/claude-3-5-sonnet-20241022", etc (see docs for litellm)
                  temperature=0.3,
                  timeout=40,
                  allowed_tries=2,
-             ),
-             "summarizer": "openai/gpt-4o-mini",
-             "researcher": "asknews/deep-research/low",
-             "parser": "openai/gpt-4o-mini",
+         ),
+         "o3": GeneralLlm(
+                model="openrouter/openai/o3",
+                temperature=0.3,
+                timeout=40,
+                allowed_tries=2,
+         ),
+         "o4-mini-high": GeneralLlm(
+                model="openrouter/openai/o4-mini-high",
+                temperature=1,
+                timeout=40,
+                allowed_tries=2,
+         ),
+         "o4-mini": GeneralLlm(
+                model="openrouter/openai/o4-mini",
+                temperature=1,
+                timeout=40,
+                allowed_tries=2,
+         ),
+         "o1-high": GeneralLlm(
+                model="openrouter/openai/o1-high",
+                temperature=0.5,
+                timeout=40,
+                allowed_tries=2,
+         ),
+         "o1": GeneralLlm(
+                model="openrouter/openai/o1",
+                temperature=0.5,
+                timeout=40,
+                allowed_tries=2,
+         ),
+         "summarizer": "openrouter/openai/gpt-4o-mini",
          },
     )
 
