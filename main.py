@@ -116,11 +116,6 @@ class hb_bot_fall_2025(ForecastBot):
             self, question: MetaculusQuestion
     ) -> Notepad:
         new_notepad = Notepad(question=question)
-        new_notepad.note_entries["question_category"] = "political-usa"
-        return new_notepad
-
-    async def run_research(self, question: MetaculusQuestion) -> str:
-        notepad = await self._get_notepad(question)
         category_prompt = clean_indents(
             f"""
                     You are an assistant to a superforecaster. Please categorize this question {question.question_text} into one of the following categories:
@@ -129,7 +124,9 @@ class hb_bot_fall_2025(ForecastBot):
                     """
         )
         notepad.note_entries["question_category"] = await self.get_llm("default", "llm").invoke(category_prompt)
+        return new_notepad
 
+    async def run_research(self, question: MetaculusQuestion) -> str:
         async with self._concurrency_limiter:
             time.sleep(12)
             research = ""
