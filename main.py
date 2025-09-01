@@ -111,7 +111,7 @@ class FallTemplateBot2025(ForecastBot):
         capacity=1,
         refresh_rate=0.1,
     ) # Allows 1 request per second on average with a burst of 2 requests initially. Set this as a class variable
-    await self.rate_limiter.wait_till_able_to_acquire_resources(1)
+
     async def _initialize_notepad(
             self, question: MetaculusQuestion
     ) -> Notepad:
