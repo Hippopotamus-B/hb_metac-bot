@@ -432,7 +432,7 @@ class hb_bot_fall_2025(ForecastBot):
             self._create_upper_and_lower_bound_messages(question)
         )
         notepad = await self._get_notepad(question)
-        if notepad.note_entries["question_category"] == "financial-usa" or notepad.question_category == "financial-international":
+        if notepad.note_entries["question_category"] == "financial-usa" or notepad.note_entries["question_category"] == "financial-international":
             model_name = "o3"
             prompt = clean_indents(
                 f"""
