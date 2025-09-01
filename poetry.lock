@@ -794,43 +794,47 @@ name = "forecasting-tools"
 version = "0.2.58"
 description = "AI forecasting and research tools to help humans reason about and forecast the future"
 optional = false
-python-versions = "<4.0,>=3.11"
+python-versions = "^3.11"
 groups = ["main"]
-files = [
-    {file = "forecasting_tools-0.2.58-py3-none-any.whl", hash = "sha256:815f7611204b8a0e5b87ed68b2511ddd74939cc68ace9bce60d78c9f07b46ac7"},
-    {file = "forecasting_tools-0.2.58.tar.gz", hash = "sha256:aa3c9de149817ebadb3f217260963f456162519676efa61b980d7d611eb250ea"},
-]
+files = []
+develop = false
 
 [package.dependencies]
-aiofiles = ">=24.1.0,<25.0.0"
-aiohttp = ">=3.9.3,<4.0.0"
-aiolimiter = ">=1.1.0,<2.0.0"
+aiofiles = "^24.1.0"
+aiohttp = "^3.9.3"
+aiolimiter = "^1.1.0"
 asknews = ">=0.9.1,<0.12.0"
 asyncio = ">=3.0.0,<5.0.0"
-exceptiongroup = ">=1.2.2,<2.0.0"
-faker = ">=37.0.1,<38.0.0"
-hyperbrowser = ">=0.53.0,<0.54.0"
-litellm = ">=1.59.1,<2.0.0"
-nest-asyncio = ">=1.5.8,<2.0.0"
+exceptiongroup = "^1.2.2"
+faker = "^37.0.1"
+hyperbrowser = "^0.53.0"
+litellm = ">=1.59.1,!=1.76.*,!=1.77.*"
+nest-asyncio = "^1.5.8"
 numpy = ">=1.26.0,<3.0.0"
 openai = ">=1.51.0,<2.0.0"
-openai-agents = {version = ">=0.2.0,<0.3.0", extras = ["litellm"]}
-pandas = ">=2.2.3,<3.0.0"
-pendulum = ">=3.1.0,<4.0.0"
+openai-agents = {version = "^0.2.0", extras = ["litellm"]}
+pandas = "^2.2.3"
+pendulum = "^3.1.0"
 pillow = ">=9.0.0,<12.0.0"
 plotly = ">=5.24.1,<7.0.0"
-pydantic = ">=2.9.2,<3.0.0"
-pytest-asyncio = ">=1.0.0,<2.0.0"
-python-dotenv = ">=1.0.0,<2.0.0"
+pydantic = "^2.9.2"
+pytest-asyncio = "^1.0.0"
+python-dotenv = "^1.0.0"
 regex = ">=2024.11.6,<2026.0.0"
-requests = ">=2.32.3,<3.0.0"
-scikit-learn = ">=1.5.2,<2.0.0"
-streamlit = ">=1.20.0,<2.0.0"
+requests = "^2.32.3"
+scikit-learn = "^1.5.2"
+streamlit = "^1.20.0"
 tenacity = ">=8.0.0,<10.0.0"
 tiktoken = ">=0.8.0,<0.12.0"
-transformers = ">=4.44.1,<5.0.0"
-typeguard = ">=4.3.0,<5.0.0"
-unidecode = ">=1.4.0,<2.0.0"
+transformers = "^4.44.1"
+typeguard = "^4.3.0"
+unidecode = "^1.4.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/robcaulk/forecasting-tools.git"
+reference = "fix/asknews-rate-limit"
+resolved_reference = "0967e826808a1cadddaa76173597317ab17eb77e"
 
 [[package]]
 name = "frozenlist"
@@ -1549,14 +1553,14 @@ test = ["ipykernel", "pre-commit", "pytest (<9)", "pytest-cov", "pytest-timeout"
 
 [[package]]
 name = "litellm"
-version = "1.76.0"
+version = "1.75.9"
 description = "Library to easily interface with LLM API providers"
 optional = false
 python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
 groups = ["main"]
 files = [
-    {file = "litellm-1.76.0-py3-none-any.whl", hash = "sha256:357464242fc1eeda384810c9e334e48ad67a50ecd30cf61e86c15f89e2f2e0b4"},
-    {file = "litellm-1.76.0.tar.gz", hash = "sha256:d26d12333135edd72af60e0e310284dac3b079f4d7c47c79dfbb2430b9b4b421"},
+    {file = "litellm-1.75.9-py3-none-any.whl", hash = "sha256:a72c3e05bcb0e50ac1804f0df09d0d7bf5cb41e84351e1609a960033b0ef01c1"},
+    {file = "litellm-1.75.9.tar.gz", hash = "sha256:d8baf4b9988df599b55cb675808bbe22cedee2f099ba883684fe3f23af8d13a9"},
 ]
 
 [package.dependencies]
@@ -1576,7 +1580,7 @@ tokenizers = "*"
 caching = ["diskcache (>=5.6.1,<6.0.0)"]
 extra-proxy = ["azure-identity (>=1.15.0,<2.0.0)", "azure-keyvault-secrets (>=4.8.0,<5.0.0)", "google-cloud-iam (>=2.19.1,<3.0.0)", "google-cloud-kms (>=2.21.3,<3.0.0)", "prisma (==0.11.0)", "redisvl (>=0.4.1,<0.5.0) ; python_version >= \"3.9\" and python_version < \"3.14\"", "resend (>=0.8.0,<0.9.0)"]
 mlflow = ["mlflow (>3.1.4) ; python_version >= \"3.10\""]
-proxy = ["PyJWT (>=2.8.0,<3.0.0)", "apscheduler (>=3.10.4,<4.0.0)", "azure-identity (>=1.15.0,<2.0.0)", "azure-storage-blob (>=12.25.1,<13.0.0)", "backoff", "boto3 (==1.36.0)", "cryptography (>=43.0.1,<44.0.0)", "fastapi (>=0.115.5,<0.116.0)", "fastapi-sso (>=0.16.0,<0.17.0)", "gunicorn (>=23.0.0,<24.0.0)", "litellm-enterprise (==0.1.19)", "litellm-proxy-extras (==0.2.18)", "mcp (>=1.10.0,<2.0.0) ; python_version >= \"3.10\"", "orjson (>=3.9.7,<4.0.0)", "polars (>=1.31.0,<2.0.0) ; python_version >= \"3.10\"", "pynacl (>=1.5.0,<2.0.0)", "python-multipart (>=0.0.18,<0.0.19)", "pyyaml (>=6.0.1,<7.0.0)", "rich (==13.7.1)", "rq", "uvicorn (>=0.29.0,<0.30.0)", "uvloop (>=0.21.0,<0.22.0) ; sys_platform != \"win32\"", "websockets (>=13.1.0,<14.0.0)"]
+proxy = ["PyJWT (>=2.8.0,<3.0.0)", "apscheduler (>=3.10.4,<4.0.0)", "azure-identity (>=1.15.0,<2.0.0)", "azure-storage-blob (>=12.25.1,<13.0.0)", "backoff", "boto3 (==1.36.0)", "cryptography (>=43.0.1,<44.0.0)", "fastapi (>=0.115.5,<0.116.0)", "fastapi-sso (>=0.16.0,<0.17.0)", "gunicorn (>=23.0.0,<24.0.0)", "litellm-enterprise (==0.1.19)", "litellm-proxy-extras (==0.2.17)", "mcp (>=1.10.0,<2.0.0) ; python_version >= \"3.10\"", "orjson (>=3.9.7,<4.0.0)", "polars (>=1.31.0,<2.0.0) ; python_version >= \"3.10\"", "pynacl (>=1.5.0,<2.0.0)", "python-multipart (>=0.0.18,<0.0.19)", "pyyaml (>=6.0.1,<7.0.0)", "rich (==13.7.1)", "rq", "uvicorn (>=0.29.0,<0.30.0)", "uvloop (>=0.21.0,<0.22.0) ; sys_platform != \"win32\"", "websockets (>=13.1.0,<14.0.0)"]
 semantic-router = ["semantic-router ; python_version >= \"3.9\""]
 utils = ["numpydoc"]
 
@@ -4416,4 +4420,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "72ae8e5121fa7c980776008af1f9cea46b8e437bdbb47884fd5e7f9535da666c"
+content-hash = "2e4f1fcb93d65ba9f9ebdb5a56dd28ef0eb9b8a7f6ba9a4eefe0f0e89a0c10ae"

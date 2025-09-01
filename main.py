@@ -120,7 +120,6 @@ class FallTemplateBot2025(ForecastBot):
         return new_notepad
 
     async def run_research(self, question: MetaculusQuestion) -> str:
-        await self.rate_limiter.wait_till_able_to_acquire_resources(1)
         notepad = await self._get_notepad(question)
         category_prompt = clean_indents(
             f"""
@@ -130,12 +129,11 @@ class FallTemplateBot2025(ForecastBot):
                     """
         )
         notepad.note_entries["question_category"] = await self.get_llm("default", "llm").invoke(category_prompt)
-        time.sleep(11)
+
         async with self._concurrency_limiter:
-            await self.rate_limiter.wait_till_able_to_acquire_resources(1)
             research = ""
             researcher = self.get_llm("researcher")
-            time.sleep(11)
+
 
             prompt = clean_indents(
                 f"""
@@ -155,16 +153,16 @@ class FallTemplateBot2025(ForecastBot):
                 {question.fine_print}
                 """
             )
-            time.sleep(11)
+
 
             if isinstance(researcher, GeneralLlm):
                 research = await researcher.invoke(prompt)
-                time.sleep(11)
+
             elif researcher == "asknews/news-summaries":
                 research = await AskNewsSearcher().get_formatted_news_async(
                     question.question_text
                 )
-                time.sleep(11)
+
             elif researcher == "asknews/deep-research/medium-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research(
                     question.question_text,
@@ -172,7 +170,7 @@ class FallTemplateBot2025(ForecastBot):
                     search_depth=2,
                     max_depth=4,
                 )
-                time.sleep(11)
+
             elif researcher == "asknews/deep-research/high-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research(
                     question.question_text,
@@ -180,7 +178,7 @@ class FallTemplateBot2025(ForecastBot):
                     search_depth=4,
                     max_depth=6,
                 )
-                time.sleep(11)
+
             elif researcher.startswith("smart-searcher"):
                 model_name = researcher.removeprefix("smart-searcher/")
                 searcher = SmartSearcher(
@@ -191,13 +189,13 @@ class FallTemplateBot2025(ForecastBot):
                     use_advanced_filters=False,
                 )
                 research = await searcher.invoke(prompt)
-                time.sleep(11)
+
             elif not researcher or researcher == "None":
                 research = ""
             else:
-                time.sleep(11)
+
                 research = await self.get_llm("researcher", "llm").invoke(prompt)
-                time.sleep(11)
+
             logger.info(f"Found Research for URL {question.page_url}:\n{research}")
             return research
 
