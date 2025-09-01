@@ -124,7 +124,7 @@ class FallTemplateBot2025(ForecastBot):
                     """
         )
         notepad.note_entries["question_category"] = await self.get_llm("default", "llm").invoke(category_prompt)
-
+        print(notepad.note_entries["question_category"])
         async with self._concurrency_limiter:
             research = ""
             researcher = self.get_llm("researcher")
@@ -147,9 +147,11 @@ class FallTemplateBot2025(ForecastBot):
                 {question.fine_print}
                 """
             )
+            time.sleep(10)
 
             if isinstance(researcher, GeneralLlm):
                 research = await researcher.invoke(prompt)
+                time.sleep(10)
             elif researcher == "asknews/news-summaries":
                 research = await AskNewsSearcher().get_formatted_news_async(
                     question.question_text
