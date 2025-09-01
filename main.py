@@ -123,7 +123,7 @@ class hb_bot_fall_2025(ForecastBot):
                     Your response should be a one word answer, consisting only of one of the above tags.
                     """
         )
-        notepad.note_entries["question_category"] = await self.get_llm("default", "llm").invoke(category_prompt)
+        new_notepad.note_entries["question_category"] = await self.get_llm("default", "llm").invoke(category_prompt)
         return new_notepad
 
     async def run_research(self, question: MetaculusQuestion) -> str:
