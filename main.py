@@ -128,6 +128,7 @@ class FallTemplateBot2025(ForecastBot):
         async with self._concurrency_limiter:
             research = ""
             researcher = self.get_llm("researcher")
+            await asyncio.sleep(10)
 
             prompt = clean_indents(
                 f"""
@@ -183,10 +184,13 @@ class FallTemplateBot2025(ForecastBot):
                     use_advanced_filters=False,
                 )
                 research = await searcher.invoke(prompt)
+                await asyncio.sleep(10)
             elif not researcher or researcher == "None":
                 research = ""
             else:
+                await asyncio.sleep(10)
                 research = await self.get_llm("researcher", "llm").invoke(prompt)
+                await asyncio.sleep(10)
             logger.info(f"Found Research for URL {question.page_url}:\n{research}")
             return research
 
