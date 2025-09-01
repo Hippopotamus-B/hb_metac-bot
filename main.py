@@ -28,7 +28,7 @@ from forecasting_tools import Notepad
 logger = logging.getLogger(__name__)
 
 
-class FallTemplateBot2025(ForecastBot):
+class hb_bot_fall_2025(ForecastBot):
     """
     This is a copy of the template bot for Fall 2025 Metaculus AI Tournament.
     This bot is what is used by Metaculus in our benchmark, but is also provided as a template for new bot makers.
@@ -595,7 +595,7 @@ if __name__ == "__main__":
         "--mode",
         type=str,
         choices=["tournament", "metaculus_cup", "test_questions"],
-        default="test_questions",
+        default="tournament",
         help="Specify the run mode (default: tournament)",
     )
     args = parser.parse_args()
@@ -606,7 +606,7 @@ if __name__ == "__main__":
         "test_questions",
     ], "Invalid run mode"
 
-    template_bot = FallTemplateBot2025(
+    template_bot = hb_bot_fall_2025(
         research_reports_per_question=1,
         predictions_per_research_report=5,
         use_research_summary_to_forecast=False,
