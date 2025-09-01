@@ -147,15 +147,16 @@ class FallTemplateBot2025(ForecastBot):
                 {question.fine_print}
                 """
             )
-            asyncio.sleep(10)
+            await asyncio.sleep(10)
 
             if isinstance(researcher, GeneralLlm):
                 research = await researcher.invoke(prompt)
-                asyncio.sleep(10)
+                await asyncio.sleep(10)
             elif researcher == "asknews/news-summaries":
                 research = await AskNewsSearcher().get_formatted_news_async(
                     question.question_text
                 )
+                await asyncio.sleep(10)
             elif researcher == "asknews/deep-research/medium-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research(
                     question.question_text,
@@ -163,6 +164,7 @@ class FallTemplateBot2025(ForecastBot):
                     search_depth=2,
                     max_depth=4,
                 )
+                await asyncio.sleep(10)
             elif researcher == "asknews/deep-research/high-depth":
                 research = await AskNewsSearcher().get_formatted_deep_research(
                     question.question_text,
@@ -170,6 +172,7 @@ class FallTemplateBot2025(ForecastBot):
                     search_depth=4,
                     max_depth=6,
                 )
+                await asyncio.sleep(10)
             elif researcher.startswith("smart-searcher"):
                 model_name = researcher.removeprefix("smart-searcher/")
                 searcher = SmartSearcher(
