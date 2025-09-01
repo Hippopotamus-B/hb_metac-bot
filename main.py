@@ -640,8 +640,8 @@ if __name__ == "__main__":
                 allowed_tries=2,
          ),
          "o1-high": GeneralLlm(
-                model="openrouter/openai/o1-high",
-                temperature=0.5,
+                model="openrouter/openai/o1",
+                temperature=0.7,
                 timeout=40,
                 allowed_tries=2,
          ),
