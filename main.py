@@ -147,11 +147,11 @@ class FallTemplateBot2025(ForecastBot):
                 {question.fine_print}
                 """
             )
-            time.sleep(10)
+            asyncio.sleep(10)
 
             if isinstance(researcher, GeneralLlm):
                 research = await researcher.invoke(prompt)
-                time.sleep(10)
+                asyncio.sleep(10)
             elif researcher == "asknews/news-summaries":
                 research = await AskNewsSearcher().get_formatted_news_async(
                     question.question_text
