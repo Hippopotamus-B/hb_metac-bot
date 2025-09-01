@@ -109,7 +109,7 @@ class hb_bot_fall_2025(ForecastBot):
     _concurrency_limiter = asyncio.Semaphore(_max_concurrent_questions)
     rate_limiter = RefreshingBucketRateLimiter(
         capacity=1,
-        refresh_rate=0.1,
+        refresh_rate=0.085,
     ) # Allows 1 request per second on average with a burst of 2 requests initially. Set this as a class variable
 
     async def _initialize_notepad(
@@ -131,6 +131,7 @@ class hb_bot_fall_2025(ForecastBot):
         notepad.note_entries["question_category"] = await self.get_llm("default", "llm").invoke(category_prompt)
 
         async with self._concurrency_limiter:
+            time.sleep(12)
             research = ""
             researcher = self.get_llm("researcher")
 
