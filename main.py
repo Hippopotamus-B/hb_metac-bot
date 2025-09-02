@@ -110,7 +110,7 @@ class hb_bot_fall_2025(ForecastBot):
     rate_limiter = RefreshingBucketRateLimiter(
         capacity=1,
         refresh_rate=0.085,
-    ) # Allows 1 request per second on average with a burst of 2 requests initially. Set this as a class variable
+    ) # Allows 1 request every 12 seconds on average.
 
     async def _initialize_notepad(
             self, question: MetaculusQuestion
@@ -131,7 +131,6 @@ class hb_bot_fall_2025(ForecastBot):
             time.sleep(12)
             research = ""
             researcher = self.get_llm("researcher")
-
 
             prompt = clean_indents(
                 f"""
